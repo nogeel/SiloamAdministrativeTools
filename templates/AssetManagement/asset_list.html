@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Printers</h2>
+    <ul>
+        <table border=1>
+        <thead><th>Asset Short Name</th></thead>
+            {% for asset in asset_list %}
+            <tr><td>{{ asset.short_description }}</td></tr>
+             {% endfor %}
+        </table>
+
+    </ul>
+{% endblock %}

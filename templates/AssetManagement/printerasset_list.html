@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Assets</h2>
+    <ul>
+        <table border=1>
+            <thead>
+                <th> Short Name</th>
+                <th>Model</th>
+                <th>Location</th>
+                <th>IP Address</th>
+                <th>Description</th>
+            </thead>
+            {% for printer in printers %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <td>{{ printer.short_description }}</td>
+                    <td>{{ printer.asset_model }}</td>
+                    <td>{{ printer.location }}</td>
+                    <td>{{ printer.printer_ip }}</td>
+                    <td> {{ printer.description }}</td>
+                </tr>
+
+            {% endfor %}
+        </table>
+
+    </ul>
+{% endblock %}
+
+
+('short_description', 'asset_model', 'location', 'serial_no')

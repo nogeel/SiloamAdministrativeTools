@@ -134,25 +134,41 @@ class HardDrive(models.Model):
     description = models.TextField()
     computer = models.ForeignKey(ComputerAsset)
 
-class PrinterAsset(Asset):
-    printer_ip = models.CharField(max_length=20, null=True)
+class PrinterType(models.Model):
+    printer_type = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return self.printer_type
+
+class PrinterCartridge(models.Model):
     printer_cartridge_model = models.CharField(max_length=255)
     cartridge_cost = models.DecimalField(decimal_places=2, max_digits=9)
     page_yield = models.IntegerField(blank=True, null=True)
     stock = models.IntegerField()
     last_ordered = models.DateField(blank=True, null=True)
 
-# End Computer Section
+    def __unicode__(self):
+        return self.printer_cartridge_model
 
+class PrinterAsset(Asset):
+    printer_type = models.ForeignKey(PrinterType)
+    printer_ip = models.CharField(max_length=20, null=True)
+    cartridges = models.ManyToManyField(PrinterCartridge)
+
+class PrinterPrinterCartridgeType(models.Model):
+    cartridge_type = models.CharField(max_length=255)
+
+    def __unicode__(self):
+        return self.cartridge_type
+
+# End Computer Section
 
 class DepreciationRate(models.Model):
     depreciation_in_years = models.IntegerField()
     asset_class = models.ForeignKey(AssetCategory)
 
-
 class Disposition_Type(models.Model):
     name = models.CharField(max_length=128)
-
 
 class Disposition(models.Model):
     date = models.DateField()
