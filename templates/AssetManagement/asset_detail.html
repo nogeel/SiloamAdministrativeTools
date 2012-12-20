@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ asset.short_description }}{% endblock %}
+
+{% block content %}
+
+    <h2>{{ asset.short_description }}</h2>
+    <div class="general">
+        <table class="table-centered table table-striped table-bordered table-condensed">
+            <tr>
+                <td>Model</td>
+                <td>{{ asset.asset_model }}</td>
+            </tr>
+            <tr>
+                <td>Class</td>
+                <td>{{ asset.asset_class }}</td>
+            </tr>
+            <tr>
+                <td>Location</td>
+                <td>{{ asset.location }}</td>
+            </tr>
+            <tr>
+                <td>Description</td>
+                <td>{{ asset.description }}</td>
+            </tr>
+            <tr>
+                <td>Date Acquired</td>
+                <td>{{ asset.acquisition_date|date:"SHORT_DATE_FORMAT" }}</td>
+            </tr>
+            <tr>
+                <td>Last Modified</td>
+                <td>{{ asset.modified_date }}</td>
+            </tr>
+        </table>
+    </div>
+<br/>
+    <div class="protected">
+        <table class="table-centered table table-striped table-bordered table-condensed">
+            <tr>
+                <td class="title">Original Value</td>
+                <td>${{ asset.original_value }}</td>
+            </tr>
+            <tr>
+                <td class="title">Current Value</td>
+                <td><strong> To be Added</strong></td>
+            </tr>
+
+        </table>
+    </div>
+    <br/>
+    {% if asset.is_computer %}
+        <a href="/Computer/{{ asset.id }}">Detailed Computer View</a>
+    {% endif %}
+    <br/>
+    <a href="/Assets/">Back to Asset List</a>
+
+
+{% endblock %}

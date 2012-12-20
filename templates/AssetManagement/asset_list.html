@@ -1,14 +1,35 @@
 {% extends "base.html" %}
 
-{% block content %}
-    <h2>Printers</h2>
-    <ul>
-        <table border=1>
-        <thead><th>Asset Short Name</th></thead>
-            {% for asset in asset_list %}
-            <tr><td>{{ asset.short_description }}</td></tr>
-             {% endfor %}
-        </table>
+{% block title %}All Assets {% endblock %}
 
-    </ul>
+{% block script %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+                    $("#asset_list").tablesorter();
+                }
+        );
+    </script>
+{% endblock %}
+
+{% block content %}
+    <h2>Assets</h2>
+    <table border=1 id="asset_list"
+           class="tablesorter table-centered table table-striped table-bordered table-condensed">
+        <thead>
+        <tr>
+            <th>Asset Short Name</th>
+            <th>Asset Class</th>
+            <th>Location</th>
+            <th>Acquisition Date</th>
+        </tr>
+        </thead>
+        {% for asset in asset_list %}
+            <tr class="{{ asset.asset_class|lower }}">
+                <td><a href="/Asset/{{ asset.id }}">{{ asset.short_description }}</a></td>
+                <td>{{ asset.asset_class }}</td>
+                <td>{{ asset.location }}</td>
+                <td>{{ asset.acquisition_date|date:"SHORT_DATE_FORMAT" }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 {% endblock %}

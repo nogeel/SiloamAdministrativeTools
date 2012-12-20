@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ computer.network_name }}{% endblock %}
+
+{% block content %}
+
+    <h2>{{ computer.network_name }}</h2>
+    <div class="general">
+        <table class="table-centered table table-striped table-bordered table-condensed">
+            <tr>
+                <td class="title">Computer Type</td>
+                <td>{{ computer.computer_type }}</td>
+            </tr>
+            <tr>
+                <td class="title">Model</td>
+                <td>{{ computer.asset_model }}</td>
+            </tr>
+            <tr>
+                <td class="title">Serial/Service Tag</td>
+                <td>{{ computer.serial_no }}</td>
+            </tr>
+            <tr>
+                <td class="title">Processor</td>
+                <td>{{ computer.processor }}</td>
+            </tr>
+            <tr>
+                <td class="title">Processor Speed (GHz)</td>
+                <td>{{ computer.processor.speed_in_ghz }}</td>
+            </tr>
+            <tr>
+                <td class="title">Cores</td>
+                <td>{{ computer.processor.cores }}</td>
+            </tr>
+
+            {% if computer.no_of_processors > 1 %}
+                <tr>
+                    <td class="title">No. of Processors</td>
+                    <td>{{ computer.no_of_processors }}</td>
+                </tr>
+            {% endif %}
+
+            <tr>
+                <td class="title">RAM (GB)</td>
+                <td>{{ computer.ram_in_gb }}</td>
+            </tr>
+            <tr>
+                <td class="title">Max RAM (GB)</td>
+                <td>{{ computer.max_ram_in_gb }}</td>
+            </tr>
+            <tr>
+                <td class="title">Hard Drives</td>
+                <td><strong>To be Added</strong></td>
+            </tr>
+            <tr>
+                <td class="title">MAC Address</td>
+                <td>{{ computer.mac_address }}</td>
+            </tr>
+
+            {% if computer.get_current_ip %}
+                <tr>
+                    <td class="title">Current IP Address</td>
+                    <td>{{ computer.get_current_ip }}</td>
+                </tr>
+
+            {% else %}
+                <tr>
+                    <td class="title">Last Known IP Address</td>
+                    {% if computer.last_known_ip %}
+                        <td>{{ computer.last_known_ip }}</td>
+                    {% else %}
+                        <td>Unknown</td>
+                        </tr>
+                    {% endif %}
+                <tr>
+                    <td class="title">Last IP Update</td>
+                    <td>{{ computer.last_ip_update }}</td>
+                </tr>
+            {% endif %}
+
+
+            <tr>
+                <td class="title">Operating System</td>
+                <td>{{ computer.operating_system }}</td>
+            </tr>
+
+            {% if  computer.description %}
+                <tr>
+                    <td class="title">General Information</td>
+                    <td>{{ computer.description }}</td>
+                </tr>
+            {% endif %}
+
+            {% if  computer.comment %}
+                <tr>
+                    <td class="title">Computer Information</td>
+                    <td>{{ computer.comment }}</td>
+                </tr>
+            {% endif %}
+
+
+            <tr>
+                <td>Tags</td>
+                <td><strong>To Be Added</strong></td>
+            </tr>
+
+
+        </table>
+        <br/>
+
+        <div class="protected">
+            <table class="table-centered table table-striped table-bordered table-condensed">
+                <tr>
+                    <td class="title">Original Value</td>
+                    <td>${{ computer.original_value }}</td>
+                </tr>
+                <tr>
+                    <td class="title">Current Value</td>
+                    <td><strong> To be Added</strong></td>
+                </tr>
+
+            </table>
+        </div>
+
+        <br/>
+        <a href="/Computers">Back to Computer List</a>
+    </div>
+
+{% endblock %}
