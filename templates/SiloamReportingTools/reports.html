@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %} Reports{% endblock %}
+
+{% block content %}
+
+    <div class="span6">
+        <h3>Provider Productivity Reports</h3>
+        <ul class="unstyled">
+          <li>Individual Staff Provider</li>
+          <li>Individual Volunteer Provider</li>
+          <li><a href="Staff/{{ year }}/">Staff Providers</a></li>
+          <li>Volunteer Medical Providers</li>
+          <li><a href="Medical/{{ year }}/">All Medical Providers</a></li>
+          <li><a href="All/{{ year }}/">All Providers</a></li>
+        </ul>
+    </div>
+
+
+    <div class="span6">
+        <h3>Test2</h3>
+    </div>
+
+
+{% endblock %}

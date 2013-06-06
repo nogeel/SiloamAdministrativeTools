@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}{{ year}}{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#productivity_table').dataTable({
+                "sDom":"<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>"
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <h2> {% block provider %}{% endblock %}{{ year }}</h2>
+
+    <table cellpadding="0" cellspacing="0" border="0"
+           class="table span-5 table-centered table-striped table-bordered">
+        <thead>
+        <th></th>
+        {% for month in months %}
+            <th>{{ month }}</th>
+        {% endfor %}
+        </thead>
+
+        <tr>
+            <td>Total Visits</td>
+            <td>{{ complete.January }}</td>
+            <td>{{ complete.February }}</td>
+            <td>{{ complete.March }}</td>
+            <td>{{ complete.April }}</td>
+            <td>{{ complete.May }}</td>
+            <td>{{ complete.June }}</td>
+            <td>{{ complete.July }}</td>
+            <td>{{ complete.August }}</td>
+            <td>{{ complete.September }}</td>
+            <td>{{ complete.October }}</td>
+            <td>{{ complete.November }}</td>
+            <td>{{ complete.December }}</td>
+        </tr>
+
+        <tr>
+            <td>Complete Appointments</td>
+            <td>{{ complete_appointments.January }}</td>
+            <td>{{ complete_appointments.February }}</td>
+            <td>{{ complete_appointments.March }}</td>
+            <td>{{ complete_appointments.April }}</td>
+            <td>{{ complete_appointments.May }}</td>
+            <td>{{ complete_appointments.June }}</td>
+            <td>{{ complete_appointments.July }}</td>
+            <td>{{ complete_appointments.August }}</td>
+            <td>{{ complete_appointments.September }}</td>
+            <td>{{ complete_appointments.October }}</td>
+            <td>{{ complete_appointments.November }}</td>
+            <td>{{ complete_appointments.December }}</td>
+        </tr>
+
+        <tr>
+            <td>Work Ins</td>
+            <td>{{ work_ins.January }}</td>
+            <td>{{ work_ins.February }}</td>
+            <td>{{ work_ins.March }}</td>
+            <td>{{ work_ins.April }}</td>
+            <td>{{ work_ins.May }}</td>
+            <td>{{ work_ins.June }}</td>
+            <td>{{ work_ins.July }}</td>
+            <td>{{ work_ins.August }}</td>
+            <td>{{ work_ins.September }}</td>
+            <td>{{ work_ins.October }}</td>
+            <td>{{ work_ins.November }}</td>
+            <td>{{ work_ins.December }}</td>
+        </tr>
+
+        <tr>
+            <td>No Shows</td>
+            <td>{{ no_shows.January }}</td>
+            <td>{{ no_shows.February }}</td>
+            <td>{{ no_shows.March }}</td>
+            <td>{{ no_shows.April }}</td>
+            <td>{{ no_shows.May }}</td>
+            <td>{{ no_shows.June }}</td>
+            <td>{{ no_shows.July }}</td>
+            <td>{{ no_shows.August }}</td>
+            <td>{{ no_shows.September }}</td>
+            <td>{{ no_shows.October }}</td>
+            <td>{{ no_shows.November }}</td>
+            <td>{{ no_shows.December }}</td>
+        </tr>
+
+        <tr>
+            <td>No Show Rate</td>
+            <td>{{ no_show_rate.January|floatformat:3 }}</td>
+            <td>{{ no_show_rate.February|floatformat:3  }}</td>
+            <td>{{ no_show_rate.March|floatformat:3  }}</td>
+            <td>{{ no_show_rate.April|floatformat:3  }}</td>
+            <td>{{ no_show_rate.May|floatformat:3 }}</td>
+            <td>{{ no_show_rate.June|floatformat:3  }}</td>
+            <td>{{ no_show_rate.July|floatformat:3  }}</td>
+            <td>{{ no_show_rate.August|floatformat:3 }}</td>
+            <td>{{ no_show_rate.September|floatformat:3 }}</td>
+            <td>{{ no_show_rate.October|floatformat:3 }}</td>
+            <td>{{ no_show_rate.November|floatformat:3  }}</td>
+            <td>{{ no_show_rate.December|floatformat:3  }}</td>
+        </tr>
+
+        <tr>
+            <td>Patient Rescheduled</td>
+            <td>{{ patient_rescheduled.January }}</td>
+            <td>{{ patient_rescheduled.February }}</td>
+            <td>{{ patient_rescheduled.March }}</td>
+            <td>{{ patient_rescheduled.April }}</td>
+            <td>{{ patient_rescheduled.May }}</td>
+            <td>{{ patient_rescheduled.June }}</td>
+            <td>{{ patient_rescheduled.July }}</td>
+            <td>{{ patient_rescheduled.August }}</td>
+            <td>{{ patient_rescheduled.September }}</td>
+            <td>{{ patient_rescheduled.October }}</td>
+            <td>{{ patient_rescheduled.November }}</td>
+            <td>{{ patient_rescheduled.December }}</td>
+        </tr>
+
+        <tr>
+            <td>Office Rescheduled</td>
+            <td>{{ office_rescheduled.January }}</td>
+            <td>{{ office_rescheduled.February }}</td>
+            <td>{{ office_rescheduled.March }}</td>
+            <td>{{ office_rescheduled.April }}</td>
+            <td>{{ office_rescheduled.May }}</td>
+            <td>{{ office_rescheduled.June }}</td>
+            <td>{{ office_rescheduled.July }}</td>
+            <td>{{ office_rescheduled.August }}</td>
+            <td>{{ office_rescheduled.September }}</td>
+            <td>{{ office_rescheduled.October }}</td>
+            <td>{{ office_rescheduled.November }}</td>
+            <td>{{ office_rescheduled.December }}</td>
+        </tr>
+
+        <tr>
+            <td>Patient Canceled</td>
+            <td>{{ patient_canceled.January }}</td>
+            <td>{{ patient_canceled.February }}</td>
+            <td>{{ patient_canceled.March }}</td>
+            <td>{{ patient_canceled.April }}</td>
+            <td>{{ patient_canceled.May }}</td>
+            <td>{{ patient_canceled.June }}</td>
+            <td>{{ patient_canceled.July }}</td>
+            <td>{{ patient_canceled.August }}</td>
+            <td>{{ patient_canceled.September }}</td>
+            <td>{{ patient_canceled.October }}</td>
+            <td>{{ patient_canceled.November }}</td>
+            <td>{{ patient_canceled.December }}</td>
+        </tr>
+
+
+        <tr>
+            <td>Office Canceled</td>
+            <td>{{ office_canceled.January }}</td>
+            <td>{{ office_canceled.February }}</td>
+            <td>{{ office_canceled.March }}</td>
+            <td>{{ office_canceled.April }}</td>
+            <td>{{ office_canceled.May }}</td>
+            <td>{{ office_canceled.June }}</td>
+            <td>{{ office_canceled.July }}</td>
+            <td>{{ office_canceled.August }}</td>
+            <td>{{ office_canceled.September }}</td>
+            <td>{{ office_canceled.October }}</td>
+            <td>{{ office_canceled.November }}</td>
+            <td>{{ office_canceled.December }}</td>
+        </tr>
+
+        <tr>
+            <td>Refugee Part 2</td>
+            <td>{{ refugee_part_two.January }}</td>
+            <td>{{ refugee_part_two.February }}</td>
+            <td>{{ refugee_part_two.March }}</td>
+            <td>{{ refugee_part_two.April }}</td>
+            <td>{{ refugee_part_two.May }}</td>
+            <td>{{ refugee_part_two.June }}</td>
+            <td>{{ refugee_part_two.July }}</td>
+            <td>{{ refugee_part_two.August }}</td>
+            <td>{{ refugee_part_two.September }}</td>
+            <td>{{ refugee_part_two.October }}</td>
+            <td>{{ refugee_part_two.November }}</td>
+            <td>{{ refugee_part_two.December }}</td>
+        </tr>
+
+        <tr>
+            <td>Pap Smear</td>
+            <td>{{ pap_smears.January }}</td>
+            <td>{{ pap_smears.February }}</td>
+            <td>{{ pap_smears.March }}</td>
+            <td>{{ pap_smears.April }}</td>
+            <td>{{ pap_smears.May }}</td>
+            <td>{{ pap_smears.June }}</td>
+            <td>{{ pap_smears.July }}</td>
+            <td>{{ pap_smears.August }}</td>
+            <td>{{ pap_smears.September }}</td>
+            <td>{{ pap_smears.October }}</td>
+            <td>{{ pap_smears.November }}</td>
+            <td>{{ pap_smears.December }}</td>
+        </tr>
+
+
+
+    </table>
+
+
+
+
+{% endblock %}

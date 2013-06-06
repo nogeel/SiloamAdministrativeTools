@@ -3,13 +3,17 @@
 {% block title %}{{ computer.network_name }}{% endblock %}
 
 {% block content %}
-
+    <div class="container">
     <h2>{{ computer.network_name }}</h2>
     <div class="general">
         <table class="table-centered table table-striped table-bordered table-condensed">
             <tr>
                 <td class="title">Computer Type</td>
                 <td>{{ computer.computer_type }}</td>
+            </tr>
+            <tr>
+                <td class="title">Location</td>
+                <td>{{ computer.location }}</td>
             </tr>
             <tr>
                 <td class="title">Model</td>
@@ -120,7 +124,7 @@
 
             </table>
         </div>
-
+    </div>
         <br/>
         <a href="/Computers">Back to Computer List</a>
     </div>

@@ -4,17 +4,18 @@
 
 {% block script %}
     <script type="text/javascript">
-        $(document).ready(function () {
-                    $("#asset_list").tablesorter();
-                }
-        );
+        $(document).ready(function() {
+            $('#asset_list').dataTable( {
+                "sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>"
+            } );
+        } );
     </script>
 {% endblock %}
 
 {% block content %}
     <h2>Assets</h2>
-    <table border=1 id="asset_list"
-           class="tablesorter table-centered table table-striped table-bordered table-condensed">
+    <table cellpadding="0" cellspacing="0" border="0"
+           class="table span-5 table-centered table-striped table-bordered" id="asset_list">
         <thead>
         <tr>
             <th>Asset Short Name</th>

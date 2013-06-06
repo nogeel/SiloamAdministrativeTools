@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+
+        {%  load crispy_forms_tags %}
+
+        <form action="/AddComputer/" method="post" class="form-horizontal">
+            {{ form|crispy }}
+            <p><input type="submit" value="Add Computer" /></p>
+        </form>
+
+    </div>
+
+{% endblock %}

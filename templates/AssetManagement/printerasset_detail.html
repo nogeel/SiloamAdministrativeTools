@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h2>{{ printer.short_description }}</h2>
+    <div class="general">
+        <table class="table-centered table table-striped table-bordered table-condensed">
+           <tr>
+               <td class="title">Printer Type</td>
+               <td>{{ printer.printer_type }}</td>
+           </tr>
+            <tr>
+                <td class="title">Location</td>
+                <td>{{ printer.location }}</td>
+            </tr>
+            <tr>
+                <td class="title">Printer Model</td>
+                <td>{{ printer.asset_model }}</td>
+            </tr>
+            <tr>
+                <td class="title">Serial Number</td>
+                <td>{{ printer.serial_no }}</td>
+            </tr>
+            <tr>
+                <td class="title">Personal Printer?</td>
+                <td>
+                {% if printer.personal_printer %}
+                    <i class="icon-ok"></i>
+                {% else %}
+                    <i class="icon-remove"></i>
+                {% endif %}
+                </td>
+
+                </tr>
+
+            <tr>
+                <td>Printer IP</td>
+                <td>{{ printer.printer_ip }}</td>
+            </tr>
+
+        </table>
+    </div>
+
+{% endblock %}

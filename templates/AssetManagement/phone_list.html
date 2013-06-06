@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Phone Directory{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#phone_list').dataTable({
+                "sDom":"<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
+                "bPaginate":false
+            });
+        });
+
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2>Phone Directory</h2>
+        <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table condensed"
+               id="phone_list">
+            <thead>
+            <tr>
+                <th>Staff</th>
+                <th>Extension</th>
+            </tr>
+            </thead>
+            {% for phone in phones %}
+                <tr>
+                    <td>{{ phone.directory_name }}</td>
+                    <td>{{ phone.phone_ext }}</td>
+
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endblock %}

@@ -5,19 +5,29 @@
 
     <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen"/>
     <link href="{{ STATIC_URL }}bootstrap/css/bootstrap.min.css" rel="stylesheet" media="print"/>
-    <link href="{{ STATIC_URL }}css/asset_management.css" rel="stylesheet" media="screen"/>
-    <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+    <link href="{{ STATIC_URL }}DataTables-1.9.4/media/css/DT_bootstrap.css">
+    <!-- <link href="{{ STATIC_URL }}css/asset_management.css" rel="stylesheet" media="screen"/> -->
 
+
+   <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
 
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.8.3.min.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.tablesorter.min.js"></script>
-
+    <script type="text/javascript" src="{{ STATIC_URL }}DataTables-1.9.4/media/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}DataTables-1.9.4/media/js/DT_bootstrap.js"></script>
 
     {% block script %}{% endblock %}
 
-
 </head>
 <body>
+
+<!-- <div id="navbar">
+    <ul class="nav nav-pills">
+        <li><a href="/Assets/">Assets</a></li>
+        <li><a href="/Computers/">Computers</a></li>
+        <li><a href="/Printers/">Printers</a></li>
+        <li><a href="/PhoneDirectory">Phone Directory</a></li>
+    </ul>
+</div> -->
             {% block content %}{% endblock %}
 
 </body>

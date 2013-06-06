@@ -11,12 +11,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': r'u:\asset_db.sqlite',                      # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': r'siloamadministrativedata',                # Or path to database file if using sqlite3.
+        'USER': 'applications',                             # Not used with sqlite3.
+        'PASSWORD': 'redstate',                             # Not used with sqlite3.
+        'HOST': 'localhost',                                # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '5432',                                     # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -93,9 +93,12 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+INTERNAL_IPS = ('127.0.0.1',)
 
 ROOT_URLCONF = 'SiloamAdministrativeTools.urls'
 
@@ -119,7 +122,14 @@ INSTALLED_APPS = (
     'AssetManagement',
     'taggit',
     'django.contrib.staticfiles',
+    'crispy_forms',
+    'south',
+    'SiloamReportingTools',
+    'debug_toolbar',
+
 )
+
+CRISPY_TEMPLATE_PACK = 'bootstrap'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
