@@ -186,12 +186,14 @@ class Provider(models.Model):
                                                            medical_provider=medical_provider,
                                                            staff_provider=staff_provider, all_encounters=all_encounters)
 
-    def patient_rescheduled_count(self, year, month=None, medical_provider=None, staff_provider=None, all_encounters=None):
+    def patient_rescheduled_count(self, year, month=None, medical_provider=None, staff_provider=None,
+                                  all_encounters=None):
         return self.visit_status_counts_by_provider('Patient Rescheduled', year=year, month=month,
                                                     medical_provider=medical_provider, staff_provider=staff_provider,
                                                     all_encounters=all_encounters)
 
-    def office_rescheduled_count(self, year, month=None, medical_provider=None, staff_provider=None, all_encounters=None):
+    def office_rescheduled_count(self, year, month=None, medical_provider=None, staff_provider=None,
+                                 all_encounters=None):
         return self.visit_status_counts_by_provider('Office Rescheduled', year=year, month=month,
                                                     medical_provider=medical_provider, staff_provider=staff_provider,
                                                     all_encounters=all_encounters)
@@ -206,7 +208,9 @@ class Provider(models.Model):
                                                     medical_provider=medical_provider, staff_provider=staff_provider,
                                                     all_encounters=all_encounters)
 
-    def visit_status_counts_by_provider(self, status, year, month=None, medical_provider=False, staff_provider=False, all_encounters=None):
+    def visit_status_counts_by_provider(self, status, year, month=None, medical_provider=False, staff_provider=False,
+                                        all_encounters=None):
+
 
         v = Visit.objects.all()
 
@@ -233,11 +237,13 @@ class Provider(models.Model):
 
         return status_count
 
-    def visit_type_complete_counts_by_provider(self, type,  year, month=None, medical_provider=None, staff_provider=None, all_encounters=None):
+    def visit_type_complete_counts_by_provider(self, type,  year, month=None, medical_provider=None,
+                                               staff_provider=None, all_encounters=None):
         return self.visit_type_counts_by_provider(type, 'Complete', year, month, medical_provider=medical_provider,
                                                   staff_provider=staff_provider, all_encounters=all_encounters)
 
-    def visit_type_counts_by_provider(self, type, status,  year, month=None, medical_provider=False, staff_provider=False, all_encounters=None):
+    def visit_type_counts_by_provider(self, type, status,  year, month=None, medical_provider=False,
+                                      staff_provider=False, all_encounters=None):
 
         v = Visit.objects.all()
 
@@ -288,11 +294,11 @@ class Visit(models.Model):
     patient = models.ForeignKey(Patient)
     visit_type = models.ForeignKey(VisitType)
     visit_status = models.ForeignKey(VisitStatus)
-    insurance_type = models.ForeignKey(InsuranceType, null=True, blank=True)
     provider_name = models.ForeignKey(ProviderName)
-    procedures = models.ManyToManyField(ProcedureCode)
+    primary_visit = models.BooleanField()
     created_date = fields.CreationDateTimeField()
     modified_date = fields.ModificationDateTimeField()
+
 
 
 class EventType(models.Model):

@@ -31,10 +31,14 @@ INPUT_DATE_FORMAT = "%m/%d/%Y"  # Format it comes from PrimeSuite As
 OUTPUT_DATE_FORMAT = "%Y-%m-%d"  # Format expected by django models.DateField()
 
 IGNORE_HEADERS = True
-TEST_DATA = (51886, 52784, 1002 )  # Minnie Mouse, Donald Duck, and Tony Tiger
+TEST_DATA = (51886, 52784, 1002)  # Minnie Mouse, Donald Duck, and Tony Tiger
 
 
 def load_demo_file_data(file_path, error_log=True):
+    """
+    File that contain demographic and visit data csv file from PrimeSuite and call the relevant functions
+    for processing
+    """
     #Grab Data from Existing CSV file
     #TODO Double check you are handling the fail correctly (how you want)
     f = open(file_path, 'rt')
@@ -244,7 +248,7 @@ def strip_and_replace_blank(some_text, is_date=False):
 
 def has_ssn(some_text):
     """
-    To prevent storing actual SNNs the function returns true or false based on if there is text
+    To prevent storing actual SSNs the function returns true or false based on if there is text
     in the string or not.
     """
     if some_text == "":
@@ -283,13 +287,27 @@ def equal_patient_data(patient, defined_values):
     Pre-condition: Assumes Patient_ID are equal between patient and defined values
     """
 
-    temp_date = datetime.date(datetime.strptime(defined_values[PT_DOB], OUTPUT_DATE_FORMAT))
+    #temp_date = datetime.date(datetime.strptime(defined_values[PT_DOB], OUTPUT_DATE_FORMAT))
 
     if patient.homeland.homeland == defined_values[HOMELAND] \
         and patient.ethnicity.ethnicity == defined_values[ETHNICITY] \
         and patient.language.language == defined_values[LANGUAGE] \
-        and patient.dob == temp_date:
+        and patient.dob == defined_values[PT_DOB]:
         return True
+    else:
+        return False
+
+
+def equal_visit_data(visit, defined_values):
+    #temp_date = datetime.date(datetime.strptime(defined_values[APPT_DATE], OUTPUT_DATE_FORMAT))
+
+    if visit.visit_id == defined_values[VISIT_ID] \
+        and visit.patient.patient_id == defined_values[PATIENT_ID] \
+        and visit.visit_type.visit_type == defined_values[VISIT_TYPE] \
+        and visit.visit_status.visit_status == defined_values[VISIT_STATUS] \
+        and visit.provider_name.provider_name == defined_values[PROVIDER] \
+        and visit.visit_date == defined_values[APPT_DATE]:
+            return True
     else:
         return False
 
@@ -316,33 +334,6 @@ def add_insurance(visit_id, insurance, event_log=False):
     v = Visit.objects.get(visit_id=visit_id)
     v.insurance_type = ins
     v.save()
-
-#def load_demo_file_data(file_path, error_log=True):
-#
-#    #Grab Data from Existing CSV file
-#    #TODO Double check you are handling the fail correctly (how you want)
-#    f = open(file_path, 'rt')
-#    try:
-#        reader = csv.reader(f, dialect='excel-tab')
-#
-#        if IGNORE_HEADERS:
-#            reader.next()
-#
-#        for row in reader:
-#            #Pull individual data in dictionary for passing to various methods
-#            data = {}
-#
-#            patient_id = strip_and_replace_blank(row[0], is_date=True)
-#            visit_id = strip_and_replace_blank(row[1])
-#            date_of_service = strip_and_replace_blank(row[2], is_date=True)
-#            void_indicator = strip_and_replace_blank(row[3])
-#
-#
-#
-#    #TODO: Handle exceptions better
-#    finally:
-#        pass
-#
 
 
 def load_procedure_file(file_path, error_log=True):
@@ -410,6 +401,8 @@ def load_extra_data_file(file_path, error_log=True):
 
 
 def handle_multiple_visits(visit_id):
+    #TODO: Select Primary Visit
+
     visits = Visit.objects.filter(visit_id=visit_id)
 
     total_visits_w_id = visits.count()
