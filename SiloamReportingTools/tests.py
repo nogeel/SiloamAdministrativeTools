@@ -1,19 +1,12 @@
 import copy
 from datetime import datetime
-from .utils import strip_and_replace_blank, equal_patient_data, save_and_deactivate_patient_demo, load_patient_data,\
+from .utils import strip_and_replace_blank, equal_patient_data, save_and_deactivate_patient_demo, load_patient_data, \
     save_inactive_patient_record, log_error, setup_data_load, load_visit_data, add_insurance, equal_visit_data
-from .utils import HOMELAND, ETHNICITY, LANGUAGE, APPT_DATE, PT_DOB, PATIENT_ID, UNKNOWN, OUTPUT_DATE_FORMAT,\
-    VISIT_TYPE, VISIT_STATUS, PROVIDER, VISIT_ID, NO_STAFF, SECONDARY, AUX,  handle_multiple_visits, add_visit_id_suffix
+from .utils import HOMELAND, ETHNICITY, LANGUAGE, APPT_DATE, PT_DOB, PATIENT_ID, UNKNOWN, OUTPUT_DATE_FORMAT, \
+    VISIT_TYPE, VISIT_STATUS, PROVIDER, VISIT_ID, handle_multiple_visits, \
+    set_most_recent_visit_to_true, set_all_primary_visit_false
 from .models import Patient, Ethnicity, Language, Homeland, Event, VisitStatus, VisitType, EventType, ProviderName, \
     Provider, Visit, PatientDemographics, InsuranceType
-
-
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
 
 from django.test import TestCase
 
@@ -64,8 +57,8 @@ class EqualPatientDataTest(TestCase):
         self.p = Patient.objects.create(patient_id=self.data[PATIENT_ID])
 
         PatientDemographics(active_record=True, patient=self.p, dob=self.data[PT_DOB], homeland=self.h,
-            ethnicity=self.e,
-            language=self.l, visit_date=self.data[APPT_DATE]).save()
+                            ethnicity=self.e,
+                            language=self.l, visit_date=self.data[APPT_DATE]).save()
 
         self.p = PatientDemographics.objects.get()
 
@@ -108,7 +101,7 @@ class TestLoadPatientData(TestCase):
         #Test Patient Does not exist
         load_patient_data(data)
         self.assertEqual(PatientDemographics.objects.all().count(), 1)
-        pt,_ = Patient.objects.get_or_create(patient_id=data[PATIENT_ID])
+        pt, _ = Patient.objects.get_or_create(patient_id=data[PATIENT_ID])
         p = PatientDemographics.objects.get(patient=pt)
 
         #self.assertTrue(equal_patient_data(p, data))
@@ -131,8 +124,9 @@ class TestLoadPatientData(TestCase):
         l = Language.objects.create(language=data1[LANGUAGE])
         e = Ethnicity.objects.create(ethnicity=data1[ETHNICITY])
 
-        p1 = PatientDemographics.objects.create(active_record=True, patient_id=data1[PATIENT_ID], dob=data1[PT_DOB], homeland=h,
-            ethnicity=e, language=l, visit_date=data1[APPT_DATE])
+        p1 = PatientDemographics.objects.create(active_record=True, patient_id=data1[PATIENT_ID], dob=data1[PT_DOB],
+                                                homeland=h,
+                                                ethnicity=e, language=l, visit_date=data1[APPT_DATE])
 
         self.assertEquals(PatientDemographics.objects.all().count(), 1)
 
@@ -140,8 +134,9 @@ class TestLoadPatientData(TestCase):
         data2 = copy.deepcopy(data1)
         data2[APPT_DATE] = "2012-3-1"
 
-        p2 = PatientDemographics.objects.create(active_record=True, patient_id=data2[PATIENT_ID], dob=data2[PT_DOB], homeland=h,
-            ethnicity=e, language=l, visit_date=data2[APPT_DATE])
+        p2 = PatientDemographics.objects.create(active_record=True, patient_id=data2[PATIENT_ID], dob=data2[PT_DOB],
+                                                homeland=h,
+                                                ethnicity=e, language=l, visit_date=data2[APPT_DATE])
 
         self.assertEquals(PatientDemographics.objects.all().count(), 2)
         self.assertEquals(PatientDemographics.objects.filter(patient_id="1234", active_record=True).count(), 2)
@@ -207,8 +202,8 @@ class TestLoadPatientData(TestCase):
 
 class TestOtherUtils(TestCase):
     def setUp(self):
-        self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "1234",\
-                PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2"}
+        self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "1234", \
+                     PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2"}
 
         self.eth1 = Ethnicity.objects.create(ethnicity=self.data[ETHNICITY])
         self.l = Language.objects.create(language=self.data[LANGUAGE])
@@ -220,9 +215,9 @@ class TestOtherUtils(TestCase):
         self.vcd = self.lv
 
     def test_save_and_deactivate_patient_demo(self):
-
-        p = PatientDemographics(active_record=True, patient=self.pt, dob=self.pt_dob, homeland=self.h, ethnicity=self.eth1,
-            language=self.l, visit_date=self.vcd)
+        p = PatientDemographics(active_record=True, patient=self.pt, dob=self.pt_dob, homeland=self.h,
+                                ethnicity=self.eth1,
+                                language=self.l, visit_date=self.vcd)
         p.save()
 
         self.data[ETHNICITY] = 'Another_Eth'
@@ -251,7 +246,7 @@ class TestOtherUtils(TestCase):
 class TestInactivePatient(TestCase):
     def setUp(self):
         self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "1234",
-                PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2"}
+                     PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2"}
 
         e = Ethnicity.objects.create(ethnicity=self.data[ETHNICITY])
         l = Language.objects.create(language=self.data[LANGUAGE])
@@ -265,26 +260,27 @@ class TestInactivePatient(TestCase):
 
         #Primary object
         self.p = PatientDemographics(active_record=False, patient=pt, dob=pt_dob, homeland=h, ethnicity=e,
-            language=l, visit_date=vcd)
+                                     language=l, visit_date=vcd)
         self.p.save()
 
     def test_duplicate_inactive_data(self):
-        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(),1)
+        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(), 1)
         save_inactive_patient_record(self.data)
-        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(),1)
+        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(), 1)
 
     def test_new_inactive_data(self):
-        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(),1)
+        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(), 1)
         other_home = Homeland.objects.create(homeland="Another Homeland")
         self.data[HOMELAND] = other_home
         save_inactive_patient_record(self.data)
-        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(),2)
+        self.assertEqual(PatientDemographics.objects.filter(active_record=False).count(), 2)
 
 
 class TestSetupLoadData(TestCase):
     def setUp(self):
         self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "1234",
-                PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2", VISIT_STATUS: "Happened", VISIT_TYPE: "Some Type", PROVIDER: "Dr. Strong"}
+                     PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2", VISIT_STATUS: "Happened", VISIT_TYPE: "Some Type",
+                     PROVIDER: "Dr. Strong"}
 
         Ethnicity.objects.create(ethnicity=self.data[ETHNICITY])
         Language.objects.create(language=self.data[LANGUAGE])
@@ -295,7 +291,7 @@ class TestSetupLoadData(TestCase):
 
 
     def test_missing_language(self):
-        l=Language.objects.get(language=self.data[LANGUAGE])
+        l = Language.objects.get(language=self.data[LANGUAGE])
         l.delete()
         self.assertEqual(Language.objects.filter(language=self.data[LANGUAGE]).count(), 0)
         setup_data_load(self.data, error_log=False)
@@ -303,7 +299,7 @@ class TestSetupLoadData(TestCase):
 
 
         #Test the error type too
-        l=Language.objects.get(language=self.data[LANGUAGE])
+        l = Language.objects.get(language=self.data[LANGUAGE])
         l.delete()
         self.assertEqual(Language.objects.filter(language=self.data[LANGUAGE]).count(), 0)
         setup_data_load(self.data, error_log=True)
@@ -311,13 +307,12 @@ class TestSetupLoadData(TestCase):
 
 
 class TestErrorLogger(TestCase):
-
     def test_load_event(self):
-        self.assertEquals(Event.objects.all().count(),0)
+        self.assertEquals(Event.objects.all().count(), 0)
         language = "Tokututu"
         log_error("New Language", "%s was added to Languages" % language, 2345, "Tokututu")
-        self.assertEqual(EventType.objects.filter(event_type="New Language").count(),1)
-        self.assertEqual(Event.objects.all().count(),1)
+        self.assertEqual(EventType.objects.filter(event_type="New Language").count(), 1)
+        self.assertEqual(Event.objects.all().count(), 1)
 
 
 class TestPatient(TestCase):
@@ -337,12 +332,12 @@ class TestPatient(TestCase):
 
         #Primary object to be compared to
         self.p = PatientDemographics(active_record=True, patient=pt, dob=pt_dob, homeland=h, ethnicity=e,
-            language=l, visit_date=vcd)
+                                     language=l, visit_date=vcd)
         self.p.save()
 
         #Object that is modified
         self.p2 = PatientDemographics(active_record=True, patient=pt, dob=pt_dob, homeland=h, ethnicity=e,
-            language=l, visit_date=vcd)
+                                      language=l, visit_date=vcd)
         self.p2.save()
 
     def test_equal_patient_objects(self):
@@ -383,9 +378,10 @@ class TestLoadVisitData(TestCase):
         VisitType.objects.create(visit_type=self.data[VISIT_TYPE])
         ProviderName.objects.create(provider_name=self.data[PROVIDER])
 
-        pt=Patient.objects.create(patient_id=self.data[PATIENT_ID])
+        pt = Patient.objects.create(patient_id=self.data[PATIENT_ID])
 
-        PatientDemographics.objects.create(ethnicity=e, language= l, homeland=h, patient=pt, dob=self.data[PT_DOB], visit_date=self.data[APPT_DATE], active_record=True )
+        PatientDemographics.objects.create(ethnicity=e, language=l, homeland=h, patient=pt, dob=self.data[PT_DOB],
+                                           visit_date=self.data[APPT_DATE], active_record=True)
 
     def test_add_new_visit(self):
         self.assertEquals(Visit.objects.all().count(), 0)
@@ -401,7 +397,6 @@ class TestLoadVisitData(TestCase):
 
 
 class TestPatientCreation(TestCase):
-
     def setUp(self):
         self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "1234",
                      PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2", VISIT_STATUS: "Happened", VISIT_TYPE: "Some Type",
@@ -416,7 +411,7 @@ class TestPatientCreation(TestCase):
 
     def create_new_patient(self):
         self.assertEqual(Patient.objects.all().count(), 0)
-        self.assertEqual(PatientDemographics.objects.all().count(),1)
+        self.assertEqual(PatientDemographics.objects.all().count(), 1)
         load_patient_data(self.data)
         self.assertEqual(Patient.objects.all().count(), 1)
         self.assertEqual(PatientDemographics.objects.all().count(), 1)
@@ -435,27 +430,28 @@ class TestLoadingInsuranceData(TestCase):
         vt = VisitType.objects.create(visit_type=self.data[VISIT_TYPE])
         pr = ProviderName.objects.create(provider_name=self.data[PROVIDER])
 
-        pt=Patient.objects.create(patient_id=self.data[PATIENT_ID])
+        pt = Patient.objects.create(patient_id=self.data[PATIENT_ID])
 
-        PatientDemographics.objects.create(ethnicity=e, language= l, homeland=h, patient=pt, dob=self.data[PT_DOB], visit_date=self.data[APPT_DATE], active_record=True )
-        self.v = Visit.objects.create(visit_date=self.data[APPT_DATE], visit_id=self.data[VISIT_ID], patient=pt, visit_type=vt, visit_status=vs, provider_name=pr)
+        PatientDemographics.objects.create(ethnicity=e, language=l, homeland=h, patient=pt, dob=self.data[PT_DOB],
+                                           visit_date=self.data[APPT_DATE], active_record=True)
+        self.v = Visit.objects.create(visit_date=self.data[APPT_DATE], visit_id=self.data[VISIT_ID], patient=pt,
+                                      visit_type=vt, visit_status=vs, provider_name=pr)
 
     def test_add_insurance_type(self):
         self.assertEqual(InsuranceType.objects.all().count(), 0)
         add_insurance(self.data[VISIT_ID], 'SomeInsurance')
         self.assertEqual(InsuranceType.objects.all().count(), 1)
 
-    # def test_add_insurance_to_visit_data(self):
-    #     self.assertEqual(self.v.insurance_type, None)
-    #     add_insurance(self.data[VISIT_ID], 'SomeInsurance')
-    #     ins = InsuranceType.objects.get(insurance_type='SomeInsurance')
-    #     v = Visit.objects.get(visit_id=self.data[VISIT_ID])
-    #     self.assertEqual(v.insurance_type, ins)
+        # def test_add_insurance_to_visit_data(self):
+        #     self.assertEqual(self.v.insurance_type, None)
+        #     add_insurance(self.data[VISIT_ID], 'SomeInsurance')
+        #     ins = InsuranceType.objects.get(insurance_type='SomeInsurance')
+        #     v = Visit.objects.get(visit_id=self.data[VISIT_ID])
+        #     self.assertEqual(v.insurance_type, ins)
 
 
 class TestMultipleVisitsReturned(TestCase):
     def setUp(self):
-
         self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "51886",
                      PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2", VISIT_STATUS: "Happened", VISIT_TYPE: "Some Type",
                      PROVIDER: "Dr. Strong", VISIT_ID: "123456749"}
@@ -476,152 +472,81 @@ class TestMultipleVisitsReturned(TestCase):
         self.v = Visit.objects.create(visit_date=self.data[APPT_DATE], visit_id=self.data[VISIT_ID], patient=pt,
                                       visit_type=vt, visit_status=vs, provider_name=pr)
 
-        prov2 = Provider.objects.create(name="Douglas P. Mann", staff_provider=True, medical_provider=True)
-        pr2 = ProviderName.objects.create(provider_name="Douglas P. Mann", provider=prov2)
+        self.prov2 = Provider.objects.create(name="Luke Skywalker", staff_provider=True, medical_provider=True)
+        pr2 = ProviderName.objects.create(provider_name="Douglas P. Mann", provider=self.prov2)
 
-        self.v2 = Visit.objects.create(visit_date=self.data[APPT_DATE], visit_id=self.data[VISIT_ID], patient=pt,
-                                      visit_type=vt, visit_status=vs, provider_name=pr2)
+        self.v2 = Visit.objects.create(visit_date="2011-3-1", visit_id=self.data[VISIT_ID], patient=pt,
+                                       visit_type=vt, visit_status=vs, provider_name=pr2)
 
-    def test_add_visit_id_suffix(self):
-        self.assertEqual(Visit.objects.filter(visit_id=self.v.visit_id).count(), 2)
-        test_visit_id = self.v.visit_id + '-Test'
-        self.assertEqual(Visit.objects.filter(visit_id=test_visit_id).count(), 0)
+        self.prov3 = Provider.objects.create(name="Juan Valdez", staff_provider=True, medical_provider=True)
+        pr3 = ProviderName.objects.create(provider_name="Juan Valdez", provider=self.prov3)
 
-        add_visit_id_suffix(self.v, '-Test')
+        self.v3 = Visit.objects.create(visit_date="2013-4-1", visit_id=self.data[VISIT_ID], patient=pt,
+                                       visit_type=vt, visit_status=vs, provider_name=pr2)
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.v.visit_id).count(), 1)
-        self.assertEqual(Visit.objects.filter(visit_id=test_visit_id).count(), 1)
-        self.assertEqual(Visit.objects.get(id=self.v.id).visit_id, test_visit_id)
+    def test_one_visit_staff_medical(self):
+        self.v2.delete()
 
-    def test_no_staff_providers_less_than(self):
-
-        p = self.v.provider_name.provider
-        p.medical_provider = False
-        p.staff_provider = False
-        p.save()
-
-        p2 = self.v2.provider_name.provider
-        p2.medical_provider = False
-        p2.staff_provider = False
-        p2.save()
-
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID],
-                                              provider_name__provider__staff_provider=True,
-                                              provider_name__provider__medical_provider=True).count(), 0)
-
-        self.v.created_date = '2013-5-1'
+        self.v.primary_visit = True
         self.v.save()
-        self.v2.created_date = '2014-1-1'
-        self.v2.save()
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
 
-        handle_multiple_visits(self.data[VISIT_ID])
+        handle_multiple_visits(visit_id=self.data[VISIT_ID])
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
 
-        new_visit_id = self.data[VISIT_ID] + NO_STAFF
-        self.assertEqual(self.data[VISIT_ID], Visit.objects.get(id=self.v.id).visit_id)
-        self.assertEqual(new_visit_id, Visit.objects.get(id=self.v2.id).visit_id)
-
-    def test_no_staff_providers_greater_than(self):
-
-        p = self.v.provider_name.provider
-        p.medical_provider = False
-        p.staff_provider = False
-        p.save()
-
-        p2 = self.v2.provider_name.provider
-        p2.medical_provider = False
-        p2.staff_provider = False
-        p2.save()
-
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID],
-                                              provider_name__provider__staff_provider=True,
-                                              provider_name__provider__medical_provider=True).count(), 0)
-
-        self.v.created_date = '2014-1-1'
+        self.v.primary_visit = False
         self.v.save()
-        self.v2.created_date = '2013-5-1'
-        self.v2.save()
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
 
-        handle_multiple_visits(self.data[VISIT_ID])
+        handle_multiple_visits(visit_id=self.data[VISIT_ID])
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 1)
-
-        new_visit_id = self.data[VISIT_ID] + NO_STAFF
-        self.assertEqual(self.data[VISIT_ID], Visit.objects.get(id=self.v2.id).visit_id)
-        self.assertEqual(new_visit_id, Visit.objects.get(id=self.v.id).visit_id)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
 
     def test_one_staff_provider(self):
-
-        p2 = self.v2.provider_name.provider
-        p2.staff_provider = False
-        p2.save()
-
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], provider_name__provider__staff_provider=True,
-                                                                                    provider_name__provider__medical_provider=True).count(), 1)
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], provider_name__provider__staff_provider=False,
-                                                                                    provider_name__provider__medical_provider=True).count(), 1)
-
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 2)
-
-        handle_multiple_visits(self.data[VISIT_ID])
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 1)
-        self.assertEqual(Visit.objects.get(id=self.v.id).visit_id, self.data[VISIT_ID])
-        change_v_id = self.data[VISIT_ID] + AUX
-        self.assertEqual(Visit.objects.get(id=self.v2.id).visit_id, change_v_id)
-
-    def test_two_staff_providers_less_than(self):
-
-
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID],
-                                              provider_name__provider__staff_provider=True,
-                                               provider_name__provider__medical_provider=True).count(), 2)
-
-        self.v.created_date = '2013-5-1'
+        self.assertTrue(False)
+        self.v.primary_visit = True
         self.v.save()
-        self.v2.created_date = '2014-1-1'
-        self.v2.save()
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
 
-        handle_multiple_visits(self.data[VISIT_ID])
+        handle_multiple_visits(visit_id=self.data[VISIT_ID])
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
 
-        new_visit_id = self.data[VISIT_ID] + SECONDARY
-        self.assertEqual(self.data[VISIT_ID], Visit.objects.get(id=self.v.id).visit_id)
-        self.assertEqual(new_visit_id, Visit.objects.get(id=self.v2.id).visit_id)
-
-    def test_no_staff_providers_greater_than(self):
-
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID],
-                                              provider_name__provider__staff_provider=True,
-                                              provider_name__provider__medical_provider=True).count(), 2)
-
-        self.v.created_date = '2014-1-1'
+        self.v.primary_visit = False
         self.v.save()
-        self.v2.created_date = '2013-5-1'
-        self.v2.save()
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
 
-        handle_multiple_visits(self.data[VISIT_ID])
+        handle_multiple_visits(visit_id=self.data[VISIT_ID])
 
-        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID]).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
 
-        new_visit_id = self.data[VISIT_ID] + SECONDARY
-        self.assertEqual(self.data[VISIT_ID], Visit.objects.get(id=self.v2.id).visit_id)
-        self.assertEqual(new_visit_id, Visit.objects.get(id=self.v.id).visit_id)
+
+    def test_two_staff_providers(self):
+        self.assertTrue(False)
+
+    def test_all_staff_providers(self):
+        self.assertTrue(False)
+
+
+
+
 
 
 class TestVisitEquality(TestCase):
-
     def setUp(self):
-
         self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "51886",
                      PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2", VISIT_STATUS: "Happened", VISIT_TYPE: "Some Type",
                      PROVIDER: "Dr. Strong", VISIT_ID: "123456749"}
@@ -646,9 +571,8 @@ class TestVisitEquality(TestCase):
         self.assertTrue(equal_visit_data(self.v, self.data))
 
     def test_not_equal_visit_date(self):
-
         self.assertTrue(equal_visit_data(self.v, self.data))
-        self.v.visit_date = '1981-1-5'
+        self.v.visit_date = '2011-1-5'
         self.v.save()
 
         self.assertFalse(equal_visit_data(self.v, self.data))
@@ -656,7 +580,7 @@ class TestVisitEquality(TestCase):
     def test_not_equal_visit_id(self):
         self.assertTrue(equal_visit_data(self.v, self.data))
 
-        self.v.visit_id = '3216576'
+        self.v.visit_id = self.data[VISIT_ID][::-1]
         self.v.save()
 
         self.assertFalse(equal_visit_data(self.v, self.data))
@@ -700,3 +624,199 @@ class TestVisitEquality(TestCase):
         self.v.save()
 
         self.assertFalse(equal_visit_data(self.v, self.data))
+
+
+class TestAllVisitsFalse(TestCase):
+    def setUp(self):
+        self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "51886",
+                     PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2", VISIT_STATUS: "Happened", VISIT_TYPE: "Some Type",
+                     PROVIDER: "Dr. Strong", VISIT_ID: "123456749"}
+
+        e = Ethnicity.objects.create(ethnicity=self.data[ETHNICITY])
+        l = Language.objects.create(language=self.data[LANGUAGE])
+        h = Homeland.objects.create(homeland=self.data[HOMELAND])
+        vs = VisitStatus.objects.create(visit_status=self.data[VISIT_STATUS])
+        vt = VisitType.objects.create(visit_type=self.data[VISIT_TYPE])
+        prov = Provider.objects.create(name=self.data[PROVIDER], staff_provider=True, medical_provider=True)
+        pr = ProviderName.objects.create(provider_name=self.data[PROVIDER], provider=prov)
+
+        pt = Patient.objects.create(patient_id=self.data[PATIENT_ID])
+
+        PatientDemographics.objects.create(ethnicity=e, language=l, homeland=h, patient=pt, dob=self.data[PT_DOB],
+                                           visit_date=self.data[APPT_DATE], active_record=True)
+
+        self.v = Visit.objects.create(visit_date=self.data[APPT_DATE], visit_id=self.data[VISIT_ID], patient=pt,
+                                      visit_type=vt, visit_status=vs, provider_name=pr, primary_visit=True)
+
+        self.two = Visit.objects.get(visit_id=self.data[VISIT_ID])
+        self.two.pk = None
+        self.two.primary_visit = False
+        self.two.save()
+
+        self.three = Visit.objects.filter(visit_id=self.data[VISIT_ID])[0]
+        self.three.pk = None
+        self.three.primary_visit = False
+        self.three.save()
+
+    def test_one_true(self):
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 2)
+
+        set_all_primary_visit_false(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 3)
+
+    def test_one_false(self):
+        self.two.primary_visit = True
+        self.two.save()
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 1)
+
+        set_all_primary_visit_false(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 3)
+
+    def test_all_true(self):
+        self.two.primary_visit = True
+        self.two.save()
+
+        self.three.primary_visit = True
+        self.three.save()
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 3)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 0)
+
+        set_all_primary_visit_false(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 3)
+
+    def test_all_false(self):
+        self.v.primary_visit = False
+        self.v.save()
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 3)
+
+        set_all_primary_visit_false(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 3)
+
+
+
+class TestSetMostRecentVisitToTrue(TestCase):
+    def setUp(self):
+        self.data = {ETHNICITY: 'Test_Eth', HOMELAND: 'Test_Home', LANGUAGE: 'Test_Lang', PATIENT_ID: "51886",
+                     PT_DOB: "1981-3-20", APPT_DATE: "2012-1-2", VISIT_STATUS: "Happened", VISIT_TYPE: "Some Type",
+                     PROVIDER: "Dr. Strong", VISIT_ID: "123456749"}
+
+        e = Ethnicity.objects.create(ethnicity=self.data[ETHNICITY])
+        l = Language.objects.create(language=self.data[LANGUAGE])
+        h = Homeland.objects.create(homeland=self.data[HOMELAND])
+        vs = VisitStatus.objects.create(visit_status=self.data[VISIT_STATUS])
+        vt = VisitType.objects.create(visit_type=self.data[VISIT_TYPE])
+        prov = Provider.objects.create(name=self.data[PROVIDER], staff_provider=True, medical_provider=True)
+        pr = ProviderName.objects.create(provider_name=self.data[PROVIDER], provider=prov)
+
+        pt = Patient.objects.create(patient_id=self.data[PATIENT_ID])
+
+        PatientDemographics.objects.create(ethnicity=e, language=l, homeland=h, patient=pt, dob=self.data[PT_DOB],
+                                           visit_date=self.data[APPT_DATE], active_record=True)
+
+        self.v = Visit.objects.create(visit_date=self.data[APPT_DATE], visit_id=self.data[VISIT_ID], patient=pt,
+                                      visit_type=vt, visit_status=vs, provider_name=pr, primary_visit=True)
+
+        self.v.created_date = "2012-1-2"
+        self.v.save()
+
+        self.two = Visit.objects.get(visit_id=self.data[VISIT_ID])
+        self.two.pk = None
+        self.two.primary_visit = False
+        self.two.created_date = '2011-6-8'
+        self.two.save()
+
+        self.three = Visit.objects.filter(visit_id=self.data[VISIT_ID])[0]
+        self.three.pk = None
+        self.three.primary_visit = False
+        self.three.created_date = '2013-6-8'
+        self.three.save()
+
+    def test_none_section(self):
+        self.two.delete()
+        self.three.delete()
+        self.v.primary_visit = False
+        self.v.save()
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 0)
+
+        set_most_recent_visit_to_true(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 0)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
+
+        self.assertTrue( Visit.objects.get(visit_id=self.data[VISIT_ID], created_date=self.data[APPT_DATE]))
+
+    def test_elif_section_two(self):
+        self.three.delete()
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
+
+        set_most_recent_visit_to_true(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertTrue(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2012-1-2").primary_visit)
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2011-6-8").primary_visit)
+
+    def test_elif_section_three(self):
+        self.three.created_date = "1991-1-9"
+        self.three.save()
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
+
+        set_most_recent_visit_to_true(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertTrue(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2012-1-2").primary_visit)
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2011-6-8").primary_visit)
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="1991-1-9").primary_visit)
+
+    def test_else_section_two(self):
+        self.two.delete()
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 1)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
+
+        self.assertTrue(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2012-1-2").primary_visit)
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2013-6-8").primary_visit)
+
+        set_most_recent_visit_to_true(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2012-1-2").primary_visit)
+        self.assertTrue(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2013-6-8").primary_visit)
+
+    def test_else_section_three(self):
+
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=False).count(), 2)
+        self.assertEqual(Visit.objects.filter(visit_id=self.data[VISIT_ID], primary_visit=True).count(), 1)
+
+        self.assertTrue(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2012-1-2").primary_visit)
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2011-6-8").primary_visit)
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2013-6-8").primary_visit)
+
+        set_most_recent_visit_to_true(Visit.objects.filter(visit_id=self.data[VISIT_ID]))
+
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2012-1-2").primary_visit)
+        self.assertFalse(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2011-6-8").primary_visit)
+        self.assertTrue(Visit.objects.get(visit_id=self.data[VISIT_ID], created_date="2013-6-8").primary_visit)
+
+
+
+
+
+
+
+

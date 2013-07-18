@@ -295,7 +295,7 @@ class Visit(models.Model):
     visit_type = models.ForeignKey(VisitType)
     visit_status = models.ForeignKey(VisitStatus)
     provider_name = models.ForeignKey(ProviderName)
-    primary_visit = models.BooleanField()
+    primary_visit = models.BooleanField(default=False)
     created_date = fields.CreationDateTimeField()
     modified_date = fields.ModificationDateTimeField()
 

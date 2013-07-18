@@ -1,7 +1,7 @@
-import csv
+import csv, pdb
 from datetime import datetime
 from django.db.models import Q
-from django.db import transaction
+from django.db import transaction, reset_queries
 from .models import Language, Homeland, Ethnicity, VisitType, VisitStatus, Patient, EventType, Event, ProviderName, \
     Visit, PatientDemographics, InsuranceType, ProcedureCode
 
@@ -20,12 +20,6 @@ ETHNICITY = "ethnicity"
 HOMELAND = "homeland"
 LANGUAGE = "language"
 
-#Suffixes for Visit IDs
-NO_STAFF = '-NoStaff'  #Where there are multiple Visit ID and a medical Staff Member isn't listed
-AUX = '-Aux'  # When there is a staff medical provider listed and addition appointments have the same ID
-SECONDARY = '-Secondary'  # When there are multiple Staff providers listed
-
-SUFFIXES = (NO_STAFF, AUX, SECONDARY)
 
 INPUT_DATE_FORMAT = "%m/%d/%Y"  # Format it comes from PrimeSuite As
 OUTPUT_DATE_FORMAT = "%Y-%m-%d"  # Format expected by django models.DateField()
@@ -44,6 +38,8 @@ def load_demo_file_data(file_path, error_log=True):
     f = open(file_path, 'rt')
     try:
         reader = csv.reader(f, dialect='excel-tab')
+
+        counter = 1
 
         if IGNORE_HEADERS:
             reader.next()
@@ -77,6 +73,11 @@ def load_demo_file_data(file_path, error_log=True):
                 #Load Visit Data
                 load_visit_data(data)
                 data = None
+
+            reset_queries()
+            print counter
+            counter = counter + 1
+
 
     #TODO: Handle exceptions better
     finally:
@@ -209,20 +210,42 @@ def load_patient_data(defined_values):
 
 
 def load_visit_data(defined_values):
-    pt = Patient.objects.get(patient_id=defined_values[PATIENT_ID])
-    vt = VisitType.objects.get(visit_type=defined_values[VISIT_TYPE])
-    vs = VisitStatus.objects.get(visit_status=defined_values[VISIT_STATUS])
-    prov = ProviderName.objects.get(provider_name=defined_values[PROVIDER])
+    #TODO Add Logging
+    pt, create = Patient.objects.get_or_create(patient_id=defined_values[PATIENT_ID])
+    vt, create = VisitType.objects.get_or_create(visit_type=defined_values[VISIT_TYPE])
+    vs, create = VisitStatus.objects.get_or_create(visit_status=defined_values[VISIT_STATUS])
+    prov, create = ProviderName.objects.get_or_create(provider_name=defined_values[PROVIDER])
 
-    #TODO Handle for modified visit IDs that have already been loaded.
+    #ignore duplicates
+    vs = Visit.objects.filter(visit_id=defined_values[VISIT_ID], patient=pt, visit_type=vt, visit_status=vs,
+                             visit_date=defined_values[APPT_DATE], provider_name=prov)
 
-    # Check to see if the visit has already been loaded, but has had the visit_id modified
-    if Visit.objects.filter(visit_id=defined_values[VISIT_ID], patient=pt, visit_type=vt, visit_status=vs,
-                            visit_date=defined_values[APPT_DATE], provider_name=prov).count() > 0:
-        Q()
+    if vs.count is not 0:
+        pass
+    else:
 
-    Visit.objects.get_or_create(visit_id=defined_values[VISIT_ID], patient=pt, visit_type=vt, visit_status=vs,
+        #Handle Those with UNKNOWN visit_id
+        if defined_values[VISIT_ID] == UNKNOWN:
+            #Visit_created with False
+            Visit.objects.create(visit_id=defined_values[VISIT_ID], patient=pt, visit_type=vt, visit_status=vs,
+                                 visit_date=defined_values[APPT_DATE], provider_name=prov, primary_visit=False)
+
+        else:
+            #Grab all objects with the current visit id
+            visits = Visit.objects.filter(visit_id=defined_values[VISIT_ID])
+            cnt = visits.count()
+
+            #Create visit if not already loaded
+            if cnt == 0:
+                Visit.objects.create(visit_id=defined_values[VISIT_ID], patient=pt, visit_type=vt, visit_status=vs,
+                                    visit_date=defined_values[APPT_DATE], provider_name=prov, primary_visit=True)
+            else:
+
+                Visit.objects.create(visit_id=defined_values[VISIT_ID], patient=pt, visit_type=vt, visit_status=vs,
                                 visit_date=defined_values[APPT_DATE], provider_name=prov)
+
+                handle_multiple_visits(defined_values[VISIT_ID])
+
 
 
 def strip_and_replace_blank(some_text, is_date=False):
@@ -287,12 +310,12 @@ def equal_patient_data(patient, defined_values):
     Pre-condition: Assumes Patient_ID are equal between patient and defined values
     """
 
-    #temp_date = datetime.date(datetime.strptime(defined_values[PT_DOB], OUTPUT_DATE_FORMAT))
+    temp_date = datetime.date(datetime.strptime(defined_values[PT_DOB], OUTPUT_DATE_FORMAT))
 
     if patient.homeland.homeland == defined_values[HOMELAND] \
         and patient.ethnicity.ethnicity == defined_values[ETHNICITY] \
         and patient.language.language == defined_values[LANGUAGE] \
-        and patient.dob == defined_values[PT_DOB]:
+        and patient.dob == temp_date:
         return True
     else:
         return False
@@ -401,42 +424,58 @@ def load_extra_data_file(file_path, error_log=True):
 
 
 def handle_multiple_visits(visit_id):
-    #TODO: Select Primary Visit
 
     visits = Visit.objects.filter(visit_id=visit_id)
 
     total_visits_w_id = visits.count()
+    #It looks for Staff Medical Visits.
     staff_visit_count = visits.filter(provider_name__provider__staff_provider=True,
                                       provider_name__provider__medical_provider=True).count()
 
-    if not total_visits_w_id > 2:
 
-        #Case 0 - No Staff Providers
+    if total_visits_w_id == 0:
+        visits[0].primary_visit = True
+        visits[0].save()
+
+    elif not total_visits_w_id > 2:
+
+        #Case 0 - No Staff Providers - Choose the earlier one
         if staff_visit_count == 0:
-            if visits[0].created_date < visits[1].created_date:
-                add_visit_id_suffix(visits[1], NO_STAFF)
+            med_count = visits.filter(provider_name__provider__staff_provider=False,
+                                      provider_name__provider__medical_provider=True).count()
+            #No Staff or Medical
+            if med_count == 0:
+                set_most_recent_visit_to_true(visits)
+
+            #Medical, but no staff
             else:
-                add_visit_id_suffix(visits[0], NO_STAFF)
+                set_most_recent_visit_to_true(visits.filter(provider_name__provider__medical_provider=True))
+                no_med = visits.filter(provider_name__provider__medical_provider=False)
+                if no_med.count() is not 0:
+                    set_all_primary_visit_false(no_med)
 
-        #Case 1 - 1 Staff Provider and 1 additional Appointment
-        elif staff_visit_count == 1:
-            non_staff_visits = visits.exclude(provider_name__provider__staff_provider=True,
-                                              provider_name__provider__medical_provider=True)[0]
-
-            add_visit_id_suffix(non_staff_visits, AUX)
-
-        #Case 2 - 2 Staff Providers
-        elif staff_visit_count == 2:
-            if visits[0].created_date < visits[1].created_date:
-                add_visit_id_suffix(visits[1], SECONDARY)
-            else:
-                add_visit_id_suffix(visits[0], SECONDARY)
-
-    else:
-    #TODO Case 4 - More than Two Visits.
-        pass
+        #Has at least 1 Staff Appointment
+        elif staff_visit_count > 0:
+            set_most_recent_visit_to_true(visits.filter(provider_name__provider__staff_provider=True))
+            set_all_primary_visit_false(visits.filter(provider_name__provider__staff_provider=False))
 
 
-def add_visit_id_suffix(visit_object, suffix):
-    visit_object.visit_id += suffix
-    visit_object.save()
+def set_most_recent_visit_to_true(visits):
+    #Set most recent created visit as primary.
+    visits = visits.order_by('-created_date')
+    most_recent = visits[0]
+    if not most_recent.primary_visit:
+        most_recent.primary_visit = True
+        most_recent.save()
+    for visit in visits[1:]:
+        if visit.primary_visit:
+            visit.primary_visit = False
+            visit.save()
+
+
+def set_all_primary_visit_false(visits):
+
+    for visit in visits:
+        if visit.primary_visit is not False:
+            visit.primary_visit = False
+            visit.save()
